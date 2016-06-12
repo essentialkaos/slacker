@@ -1,11 +1,11 @@
-# Slacker [![GoDoc](https://godoc.org/pkg.re/essentialkaos/slacker.v1?status.svg)](https://godoc.org/pkg.re/essentialkaos/slacker.v1)
+# Slacker [![GoDoc](https://godoc.org/pkg.re/essentialkaos/slacker.v2?status.svg)](https://godoc.org/pkg.re/essentialkaos/slacker.v2)
 
 `slacker` is simple go package for bootstraping Slack bots.
 
 ### Installation
 
 ````
-go get pkg.re/essentialkaos/slacker.v1
+go get pkg.re/essentialkaos/slacker.v2
 ````
 
 ### Examples
