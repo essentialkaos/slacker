@@ -133,6 +133,38 @@ func (b *Bot) GetUser(nameOrId string) User {
 	return User{}
 }
 
+// NormalizeInput normalize links and usernames in message
+func (b *Bot) NormalizeInput(input string) string {
+	if input == "" {
+		return ""
+	}
+
+	var result []string
+
+	inputSlice := strings.Split(input, " ")
+
+	for _, t := range inputSlice {
+		if strings.HasPrefix(t, "<http") && strings.Contains(t, "|") && strings.HasSuffix(t, ">") {
+			result = append(result, t[strings.Index(t, "|")+1:len(t)-1])
+			continue
+		}
+
+		if strings.HasPrefix(t, "<@U") && strings.HasSuffix(t, ">") {
+			user := b.GetUser(t)
+
+			if user.Name == "" {
+				result = append(result, t)
+			} else {
+				result = append(result, "@"+user.Name)
+			}
+
+			continue
+		}
+	}
+
+	return strings.Join(result, " ")
+}
+
 // ////////////////////////////////////////////////////////////////////////////////// //
 
 // rtmLoop is rtm processing loop
@@ -174,7 +206,7 @@ LOOP:
 				user := b.usersInfo.Users[msgEvent.User]
 				cmd, args := extractCommand(msgEvent.Text)
 
-				if b.CommandHandlers == nil {
+				if b.CommandHandlers == nil || cmd == "" {
 					continue
 				}
 
