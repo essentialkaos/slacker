@@ -39,6 +39,7 @@ type Bot struct {
 
 	CommandHandlers map[string]CommandHandler
 
+	rtm       *slack.RTM
 	client    *slack.Client
 	usersInfo *UsersInfo
 	botID     string
@@ -87,6 +88,13 @@ func NewBot(name, token string) *Bot {
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
+// Mention generates mention link
+func (u *User) Mention() string {
+	return "<@" + u.ID + ">"
+}
+
+// ////////////////////////////////////////////////////////////////////////////////// //
+
 // Run starts bot
 func (b *Bot) Run() error {
 	if b.works {
@@ -111,21 +119,40 @@ func (b *Bot) Run() error {
 	b.usersInfo = &UsersInfo{}
 	b.works = true
 
-	b.fetchUsers()
+	b.FetchUsers()
 	b.rtmLoop()
 
 	return nil
 }
 
-// GetUser return struct with user info by name or id
-func (b *Bot) GetUser(nameOrId string) User {
-	if strings.Contains(nameOrId, "@") {
-		id := strings.Trim(nameOrId, "<@>")
+// fetchUsers create map id->name
+func (b *Bot) FetchUsers() error {
+	users, err := b.client.GetUsers()
+
+	if err != nil {
+		return err
+	}
+
+	b.usersInfo.Users = make(map[string]User)
+
+	for _, user := range users {
+		b.usersInfo.Users[user.ID] = convertUser(user)
+	}
+
+	b.usersInfo.updated = time.Now().Unix()
+
+	return nil
+}
+
+// GetUser return struct with user info by name or ID
+func (b *Bot) GetUser(nameOrID string) User {
+	if strings.Contains(nameOrID, "@") {
+		id := strings.Trim(nameOrID, "<@>")
 		return b.usersInfo.Users[id]
 	}
 
 	for _, user := range b.usersInfo.Users {
-		if user.Name == nameOrId {
+		if user.Name == nameOrID {
 			return user
 		}
 	}
@@ -133,7 +160,7 @@ func (b *Bot) GetUser(nameOrId string) User {
 	return User{}
 }
 
-// NormalizeInput normalize links and usernames in message
+// NormalizeInput normalize links and usernames in a message
 func (b *Bot) NormalizeInput(input string) string {
 	if input == "" {
 		return ""
@@ -165,17 +192,36 @@ func (b *Bot) NormalizeInput(input string) string {
 	return strings.Join(result, " ")
 }
 
+// SendMessage send message to some user
+func (b *Bot) SendMessage(to, message string) error {
+	user := b.GetUser(to)
+
+	if !user.Valid {
+		return fmt.Errorf("Can't find user %s", to)
+	}
+
+	_, _, err := b.client.PostMessage(
+		user.ID, message,
+		slack.PostMessageParameters{
+			AsUser: true,
+		},
+	)
+
+	return err
+}
+
 // ////////////////////////////////////////////////////////////////////////////////// //
 
 // rtmLoop is rtm processing loop
 func (b *Bot) rtmLoop() {
 	rtm := b.client.NewRTM()
 	go rtm.ManageConnection()
+	b.rtm = rtm
 
 LOOP:
 	for {
 		if time.Now().Unix() >= b.usersInfo.updated+int64(b.UserListUpdatePeriod) {
-			b.fetchUsers()
+			b.FetchUsers()
 		}
 
 		select {
@@ -265,25 +311,6 @@ func (b *Bot) isBotCommand(message, channel string) bool {
 	}
 
 	return strings.HasPrefix(message, "<@"+b.botID+">")
-}
-
-// fetchUsers create map id->name
-func (b *Bot) fetchUsers() error {
-	users, err := b.client.GetUsers()
-
-	if err != nil {
-		return err
-	}
-
-	b.usersInfo.Users = make(map[string]User)
-
-	for _, user := range users {
-		b.usersInfo.Users[user.ID] = convertUser(user)
-	}
-
-	b.usersInfo.updated = time.Now().Unix()
-
-	return nil
 }
 
 // ////////////////////////////////////////////////////////////////////////////////// //
