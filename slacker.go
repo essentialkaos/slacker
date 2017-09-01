@@ -187,6 +187,8 @@ func (b *Bot) NormalizeInput(input string) string {
 
 			continue
 		}
+
+		result = append(result, t)
 	}
 
 	return strings.Join(result, " ")
