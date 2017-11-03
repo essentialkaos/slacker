@@ -272,7 +272,7 @@ func (b *Bot) processChannelJoinedEvent(ev *slack.ChannelJoinedEvent) {
 		response := b.HelloHandler()
 
 		if response != "" {
-			rtm.SendMessage(rtm.NewOutgoingMessage(response, ev.Channel.ID))
+			b.rtm.SendMessage(b.rtm.NewOutgoingMessage(response, ev.Channel.ID))
 		}
 	}
 }
@@ -283,15 +283,36 @@ func (b *Bot) processMessageEvent(ev *slack.MessageEvent) {
 		return
 	}
 
-	user := b.usersInfo.Users[ev.User]
 	cmd, args := extractCommand(ev.Text)
 
 	if b.CommandHandlers == nil || cmd == "" {
 		return
 	}
 
-	setCommandStatus(ev)
+	b.setCommandStatus(ev)
+	b.execHandler(ev, cmd, args)
+}
 
+// processRTMError is RTMError event handler
+func (b *Bot) processRTMError(ev *slack.RTMError) {
+	if b.ErrorHandler != nil {
+		b.ErrorHandler(fmt.Errorf(ev.Error()))
+	}
+}
+
+// processInvalidAuthEvent is InvalidAuth event handler
+func (b *Bot) processInvalidAuthEvent(ev *slack.InvalidAuthEvent) {
+	if b.ErrorHandler != nil {
+		b.ErrorHandler(fmt.Errorf("Can't authorize with given token"))
+	}
+
+	b.Started = 0
+	b.works = false
+}
+
+// execHandler execute command handler
+func (b *Bot) execHandler(ev *slack.MessageEvent, cmd string, args []string) {
+	user := b.usersInfo.Users[ev.User]
 	handler := b.CommandHandlers[cmd]
 
 	if handler == nil {
@@ -314,23 +335,6 @@ func (b *Bot) processMessageEvent(ev *slack.MessageEvent) {
 			b.rtm.SendMessage(b.rtm.NewOutgoingMessage(response, ev.Channel))
 		}
 	}
-}
-
-// processRTMError is RTMError event handler
-func (b *Bot) processRTMError(ev *slack.RTMError) {
-	if b.ErrorHandler != nil {
-		b.ErrorHandler(fmt.Errorf(errEvent.Error()))
-	}
-}
-
-// processInvalidAuthEvent is InvalidAuth event handler
-func (b *Bot) processInvalidAuthEvent(ev *slack.InvalidAuthEvent) {
-	if b.ErrorHandler != nil {
-		b.ErrorHandler(fmt.Errorf("Can't authorize with given token"))
-	}
-
-	b.Started = 0
-	b.works = false
 }
 
 // setCommandStatus set
