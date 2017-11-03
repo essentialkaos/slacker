@@ -20,6 +20,7 @@ const (
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
+// CommandHandler is command handler
 type CommandHandler func(user User, args []string) []string
 
 // Bot is basic bot struct
@@ -31,7 +32,6 @@ type Bot struct {
 	Started              int64  // Bot start timestamp
 	UserListUpdatePeriod int    // User list update period in seconds
 
-	// Async handlers
 	ErrorHandler          func(err error)
 	ConnectHandler        func()
 	HelloHandler          func() string
@@ -68,6 +68,7 @@ type User struct {
 	Valid             bool   `json:"valid"`
 }
 
+// Basic users info
 type UsersInfo struct {
 	Users   map[string]User
 	updated int64
@@ -194,7 +195,7 @@ func (b *Bot) NormalizeInput(input string) string {
 	return strings.Join(result, " ")
 }
 
-// SendMessage send message to some user
+// SendMessage send simple message to some user
 func (b *Bot) SendMessage(to, message string) error {
 	user := b.GetUser(to)
 
@@ -202,12 +203,12 @@ func (b *Bot) SendMessage(to, message string) error {
 		return fmt.Errorf("Can't find user %s", to)
 	}
 
-	_, _, err := b.client.PostMessage(
-		user.ID, message,
-		slack.PostMessageParameters{
-			AsUser: true,
-		},
-	)
+	return b.PostMessage(user.ID, message, slack.PostMessageParameters{AsUser: true})
+}
+
+// PostMessage post mesasge
+func (b *Bot) PostMessage(channel, message string, params slack.PostMessageParameters) error {
+	_, _, err := b.client.PostMessage(channel, message, params)
 
 	return err
 }
@@ -230,76 +231,19 @@ LOOP:
 		case event := <-rtm.IncomingEvents:
 			switch event.Data.(type) {
 			case *slack.ConnectedEvent:
-				if b.ConnectHandler != nil {
-					b.ConnectHandler()
-				}
+				b.processConnectedEvent(event.Data.(*slack.ConnectedEvent))
 
 			case *slack.ChannelJoinedEvent:
-				if b.HelloHandler != nil {
-					joinedEvent := event.Data.(*slack.ChannelJoinedEvent)
-					response := b.HelloHandler()
-
-					if response != "" {
-						rtm.SendMessage(rtm.NewOutgoingMessage(response, joinedEvent.Channel.ID))
-					}
-				}
+				b.processChannelJoinedEvent(event.Data.(*slack.ChannelJoinedEvent))
 
 			case *slack.MessageEvent:
-				msgEvent := event.Data.(*slack.MessageEvent)
-
-				if !b.isBotCommand(msgEvent.Text, msgEvent.Channel) || msgEvent.User == b.botID {
-					continue
-				}
-
-				user := b.usersInfo.Users[msgEvent.User]
-				cmd, args := extractCommand(msgEvent.Text)
-
-				if b.CommandHandlers == nil || cmd == "" {
-					continue
-				}
-
-				handler := b.CommandHandlers[cmd]
-
-				if handler == nil {
-					if b.UnknownCommandHandler != nil {
-						rtm.SendMessage(
-							rtm.NewOutgoingMessage(
-								b.UnknownCommandHandler(user, cmd, args),
-								msgEvent.Channel,
-							),
-						)
-					}
-
-					continue
-				}
-
-				switch b.StatusType {
-				case STATUS_EMOJI:
-					b.client.AddReaction(
-						"white_check_mark",
-						slack.NewRefToMessage(msgEvent.Channel, msgEvent.Timestamp),
-					)
-
-				case STATUS_TYPING:
-					rtm.SendMessage(rtm.NewTypingMessage(msgEvent.Channel))
-				}
-
-				responses := handler(user, args)
-
-				if len(responses) != 0 {
-					for _, response := range responses {
-						rtm.SendMessage(rtm.NewOutgoingMessage(response, msgEvent.Channel))
-					}
-				}
+				b.processMessageEvent(event.Data.(*slack.MessageEvent))
 
 			case *slack.RTMError:
-				errEvent := event.Data.(*slack.RTMError)
-				b.ErrorHandler(fmt.Errorf(errEvent.Error()))
+				b.processRTMError(event.Data.(*slack.RTMError))
 
 			case *slack.InvalidAuthEvent:
-				b.ErrorHandler(fmt.Errorf("Can't authorize with given token"))
-				b.Started = 0
-				b.works = false
+				b.processInvalidAuthEvent(event.Data.(*slack.InvalidAuthEvent))
 				break LOOP
 			}
 		}
@@ -313,6 +257,94 @@ func (b *Bot) isBotCommand(message, channel string) bool {
 	}
 
 	return strings.HasPrefix(message, "<@"+b.botID+">")
+}
+
+// processConnectEvent is Connected event handler
+func (b *Bot) processConnectedEvent(ev *slack.ConnectedEvent) {
+	if b.ConnectHandler != nil {
+		b.ConnectHandler()
+	}
+}
+
+// processChannelJoinedEvent is ChannelJoined event handler
+func (b *Bot) processChannelJoinedEvent(ev *slack.ChannelJoinedEvent) {
+	if b.HelloHandler != nil {
+		response := b.HelloHandler()
+
+		if response != "" {
+			rtm.SendMessage(rtm.NewOutgoingMessage(response, ev.Channel.ID))
+		}
+	}
+}
+
+// processMessageEvent is Message event handler
+func (b *Bot) processMessageEvent(ev *slack.MessageEvent) {
+	if !b.isBotCommand(ev.Text, ev.Channel) || ev.User == b.botID {
+		return
+	}
+
+	user := b.usersInfo.Users[ev.User]
+	cmd, args := extractCommand(ev.Text)
+
+	if b.CommandHandlers == nil || cmd == "" {
+		return
+	}
+
+	setCommandStatus(ev)
+
+	handler := b.CommandHandlers[cmd]
+
+	if handler == nil {
+		if b.UnknownCommandHandler != nil {
+			b.rtm.SendMessage(
+				b.rtm.NewOutgoingMessage(
+					b.UnknownCommandHandler(user, cmd, args),
+					ev.Channel,
+				),
+			)
+		}
+
+		return
+	}
+
+	responses := handler(user, args)
+
+	if len(responses) != 0 {
+		for _, response := range responses {
+			b.rtm.SendMessage(b.rtm.NewOutgoingMessage(response, ev.Channel))
+		}
+	}
+}
+
+// processRTMError is RTMError event handler
+func (b *Bot) processRTMError(ev *slack.RTMError) {
+	if b.ErrorHandler != nil {
+		b.ErrorHandler(fmt.Errorf(errEvent.Error()))
+	}
+}
+
+// processInvalidAuthEvent is InvalidAuth event handler
+func (b *Bot) processInvalidAuthEvent(ev *slack.InvalidAuthEvent) {
+	if b.ErrorHandler != nil {
+		b.ErrorHandler(fmt.Errorf("Can't authorize with given token"))
+	}
+
+	b.Started = 0
+	b.works = false
+}
+
+// setCommandStatus set
+func (b *Bot) setCommandStatus(ev *slack.MessageEvent) {
+	switch b.StatusType {
+	case STATUS_EMOJI:
+		b.client.AddReaction(
+			"white_check_mark",
+			slack.NewRefToMessage(ev.Channel, ev.Timestamp),
+		)
+
+	case STATUS_TYPING:
+		b.rtm.SendMessage(b.rtm.NewTypingMessage(ev.Channel))
+	}
 }
 
 // ////////////////////////////////////////////////////////////////////////////////// //
