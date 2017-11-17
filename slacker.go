@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nlopes/slack"
+	"github.com/essentialkaos/slack"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -48,24 +48,30 @@ type Bot struct {
 
 // User is struct with user info
 type User struct {
-	ID                string `json:"id"`
-	Name              string `json:"name"`
-	Deleted           bool   `json:"deleted"`
-	Color             string `json:"color"`
-	RealName          string `json:"real_name"`
-	TZ                string `json:"tz,omitempty"`
-	TZLabel           string `json:"tz_label"`
-	TZOffset          int    `json:"tz_offset"`
-	IsBot             bool   `json:"is_bot"`
-	IsAdmin           bool   `json:"is_admin"`
-	IsOwner           bool   `json:"is_owner"`
-	IsPrimaryOwner    bool   `json:"is_primary_owner"`
-	IsRestricted      bool   `json:"is_restricted"`
-	IsUltraRestricted bool   `json:"is_ultra_restricted"`
-	Has2FA            bool   `json:"has_2fa"`
-	HasFiles          bool   `json:"has_files"`
-	Presence          string `json:"presence"`
-	Valid             bool   `json:"valid"`
+	ID                    string `json:"id"`
+	Name                  string `json:"name"`
+	FirstName             string `json:"first_name"`
+	LastName              string `json:"last_name"`
+	Email                 string `json:"email"`
+	Deleted               bool   `json:"deleted"`
+	Color                 string `json:"color"`
+	DisplayName           string `json:"display_name"`
+	DisplayNameNormalized string `json:"display_name_normalized"`
+	RealName              string `json:"real_name"`
+	RealNameNormalized    string `json:"real_name_normalized"`
+	TZ                    string `json:"tz,omitempty"`
+	TZLabel               string `json:"tz_label"`
+	TZOffset              int    `json:"tz_offset"`
+	IsBot                 bool   `json:"is_bot"`
+	IsAdmin               bool   `json:"is_admin"`
+	IsOwner               bool   `json:"is_owner"`
+	IsPrimaryOwner        bool   `json:"is_primary_owner"`
+	IsRestricted          bool   `json:"is_restricted"`
+	IsUltraRestricted     bool   `json:"is_ultra_restricted"`
+	Has2FA                bool   `json:"has_2fa"`
+	HasFiles              bool   `json:"has_files"`
+	Presence              string `json:"presence"`
+	Valid                 bool   `json:"valid"`
 }
 
 // Basic users info
@@ -379,23 +385,29 @@ func extractCommand(message string) (string, []string) {
 // convertUser convert slack.User struct to slacker.User
 func convertUser(user slack.User) User {
 	return User{
-		ID:                user.ID,
-		Name:              user.Name,
-		Deleted:           user.Deleted,
-		Color:             user.Color,
-		RealName:          user.RealName,
-		TZ:                user.TZ,
-		TZLabel:           user.TZLabel,
-		TZOffset:          user.TZOffset,
-		IsBot:             user.IsBot,
-		IsAdmin:           user.IsAdmin,
-		IsOwner:           user.IsOwner,
-		IsPrimaryOwner:    user.IsPrimaryOwner,
-		IsRestricted:      user.IsRestricted,
-		IsUltraRestricted: user.IsUltraRestricted,
-		Has2FA:            user.Has2FA,
-		HasFiles:          user.HasFiles,
-		Presence:          user.Presence,
-		Valid:             true,
+		ID:                    user.ID,
+		Name:                  user.Name,
+		FirstName:             user.Profile.FirstName,
+		LastName:              user.Profile.LastName,
+		Email:                 user.Profile.Email,
+		Deleted:               user.Deleted,
+		Color:                 user.Color,
+		DisplayName:           user.Profile.DisplayName,
+		DisplayNameNormalized: user.Profile.DisplayNameNormalized,
+		RealName:              user.RealName,
+		RealNameNormalized:    user.Profile.RealNameNormalized,
+		TZ:                    user.TZ,
+		TZLabel:               user.TZLabel,
+		TZOffset:              user.TZOffset,
+		IsBot:                 user.IsBot,
+		IsAdmin:               user.IsAdmin,
+		IsOwner:               user.IsOwner,
+		IsPrimaryOwner:        user.IsPrimaryOwner,
+		IsRestricted:          user.IsRestricted,
+		IsUltraRestricted:     user.IsUltraRestricted,
+		Has2FA:                user.Has2FA,
+		HasFiles:              user.HasFiles,
+		Presence:              user.Presence,
+		Valid:                 true,
 	}
 }
