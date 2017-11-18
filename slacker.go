@@ -162,6 +162,10 @@ func (b *Bot) GetUser(nameOrID string) User {
 		if user.Name == nameOrID {
 			return user
 		}
+
+		if user.DisplayName == nameOrID {
+			return user
+		}
 	}
 
 	return User{}
