@@ -5,7 +5,7 @@
 ########################################################################################
 
 deps:
-	go get -v github.com/nlopes/slack
+	go get -v github.com/essentialkaos/slack
 
 fmt:
 	find . -name "*.go" -exec gofmt -s -w {} \;
