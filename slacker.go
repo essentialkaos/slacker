@@ -53,7 +53,6 @@ type User struct {
 	FirstName             string `json:"first_name"`
 	LastName              string `json:"last_name"`
 	Email                 string `json:"email"`
-	Deleted               bool   `json:"deleted"`
 	Color                 string `json:"color"`
 	DisplayName           string `json:"display_name"`
 	DisplayNameNormalized string `json:"display_name_normalized"`
@@ -61,7 +60,9 @@ type User struct {
 	RealNameNormalized    string `json:"real_name_normalized"`
 	TZ                    string `json:"tz,omitempty"`
 	TZLabel               string `json:"tz_label"`
+	Presence              string `json:"presence"`
 	TZOffset              int    `json:"tz_offset"`
+	Deleted               bool   `json:"deleted"`
 	IsBot                 bool   `json:"is_bot"`
 	IsAdmin               bool   `json:"is_admin"`
 	IsOwner               bool   `json:"is_owner"`
@@ -70,7 +71,6 @@ type User struct {
 	IsUltraRestricted     bool   `json:"is_ultra_restricted"`
 	Has2FA                bool   `json:"has_2fa"`
 	HasFiles              bool   `json:"has_files"`
-	Presence              string `json:"presence"`
 	Valid                 bool   `json:"valid"`
 }
 
