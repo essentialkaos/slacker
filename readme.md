@@ -1,4 +1,11 @@
-# Slacker [![GoDoc](https://godoc.org/pkg.re/essentialkaos/slacker.v4?status.svg)](https://godoc.org/pkg.re/essentialkaos/slacker.v4) [![Go Report Card](https://goreportcard.com/badge/github.com/essentialkaos/slacker)](https://goreportcard.com/report/github.com/essentialkaos/slacker) [![codebeat badge](https://codebeat.co/badges/849c74bd-e041-44e6-9d9a-f2d46408b286)](https://codebeat.co/projects/github-com-essentialkaos-slacker-master) [![License](https://gh.kaos.io/ekol.svg)](https://essentialkaos.com/ekol)
+<p align="center"><a href="#readme"><img src="https://gh.kaos.io/slacker.svg"/></a></p>
+
+<p align="center">
+  <a href="https://godoc.org/pkg.re/essentialkaos/slacker.v6"><img src="https://godoc.org/pkg.re/essentialkaos/slacker.v6?status.svg"></a>
+  <a href="https://goreportcard.com/report/github.com/essentialkaos/slacker"><img src="https://goreportcard.com/badge/github.com/essentialkaos/slacker"></a>
+  <a href="https://codebeat.co/projects/github-com-essentialkaos-slacker-master"><img src="https://codebeat.co/badges/849c74bd-e041-44e6-9d9a-f2d46408b286"></a>
+  <a href="https://essentialkaos.com/ekol"><img src="https://gh.kaos.io/ekol.svg"></a>
+</p>
 
 `slacker` is simple go package for bootstraping Slack bots.
 
