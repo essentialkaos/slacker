@@ -20,15 +20,17 @@ git config --global http.https://pkg.re.followRedirects true
 Make sure you have a working Go 1.7+ workspace ([instructions](https://golang.org/doc/install)), then:
 
 ````
-go get pkg.re/essentialkaos/slacker.v5
+go get pkg.re/essentialkaos/slacker.v6
 ````
 
 For update to latest stable release, do:
 
 ```
-go get -u pkg.re/essentialkaos/slacker.v5
+go get -u pkg.re/essentialkaos/slacker.v6
 ```
 
 ### License
 
 [EKOL](https://essentialkaos.com/ekol)
+
+<p align="center"><a href="https://essentialkaos.com"><img src="https://gh.kaos.io/ekgh.svg"/></a></p>
