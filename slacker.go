@@ -1,5 +1,11 @@
+// Package slacker provides methods for for bootstraping Slack bots
 package slacker
 
+// ////////////////////////////////////////////////////////////////////////////////// //
+//                                                                                    //
+//                     Copyright (c) 2009-2018 ESSENTIAL KAOS                         //
+//        Essential Kaos Open Source License <https://essentialkaos.com/ekol>         //
+//                                                                                    //
 // ////////////////////////////////////////////////////////////////////////////////// //
 
 import (
@@ -7,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/essentialkaos/slack"
+	"pkg.re/essentialkaos/slack.v3"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
