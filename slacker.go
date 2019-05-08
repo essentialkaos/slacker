@@ -3,7 +3,7 @@ package slacker
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 //                                                                                    //
-//                     Copyright (c) 2009-2018 ESSENTIAL KAOS                         //
+//                     Copyright (c) 2009-2019 ESSENTIAL KAOS                         //
 //        Essential Kaos Open Source License <https://essentialkaos.com/ekol>         //
 //                                                                                    //
 // ////////////////////////////////////////////////////////////////////////////////// //
@@ -13,18 +13,25 @@ import (
 	"strings"
 	"time"
 
-	"pkg.re/essentialkaos/slack.v3"
+	"github.com/nlopes/slack"
 )
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
+// Status types
 const (
 	STATUS_NONE   uint = 0
 	STATUS_TYPING      = 1
 	STATUS_EMOJI       = 2
 )
 
+// VERSION is current package version
+const VERSION = "8.0.0"
+
 // ////////////////////////////////////////////////////////////////////////////////// //
+
+// User is alias for slack.User struct
+type User = slack.User
 
 // CommandHandler is command handler
 type CommandHandler func(user User, args []string) []string
@@ -52,43 +59,16 @@ type Bot struct {
 	works     bool
 }
 
-// User is struct with user info
-type User struct {
-	ID                    string `json:"id"`
-	Name                  string `json:"name"`
-	FirstName             string `json:"first_name"`
-	LastName              string `json:"last_name"`
-	Email                 string `json:"email"`
-	Color                 string `json:"color"`
-	DisplayName           string `json:"display_name"`
-	DisplayNameNormalized string `json:"display_name_normalized"`
-	RealName              string `json:"real_name"`
-	RealNameNormalized    string `json:"real_name_normalized"`
-	TZ                    string `json:"tz,omitempty"`
-	TZLabel               string `json:"tz_label"`
-	Presence              string `json:"presence"`
-	TZOffset              int    `json:"tz_offset"`
-	Deleted               bool   `json:"deleted"`
-	IsBot                 bool   `json:"is_bot"`
-	IsAdmin               bool   `json:"is_admin"`
-	IsOwner               bool   `json:"is_owner"`
-	IsPrimaryOwner        bool   `json:"is_primary_owner"`
-	IsRestricted          bool   `json:"is_restricted"`
-	IsUltraRestricted     bool   `json:"is_ultra_restricted"`
-	Has2FA                bool   `json:"has_2fa"`
-	HasFiles              bool   `json:"has_files"`
-	Valid                 bool   `json:"valid"`
-}
-
 // Basic users info
 type UsersInfo struct {
-	Users   map[string]User
-	updated int64
+	Users map[string]User
+
+	lastUpdate int64
 }
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
-// NewBot return new bot struct
+// NewBot creates new bot
 func NewBot(name, token string) *Bot {
 	return &Bot{
 		Token:                token,
@@ -101,8 +81,12 @@ func NewBot(name, token string) *Bot {
 
 // ////////////////////////////////////////////////////////////////////////////////// //
 
-// Mention generates mention link
-func (u *User) Mention() string {
+// GetMention generates user mention link
+func GetMention(u User) string {
+	if u.ID == "" {
+		return "Uknown User"
+	}
+
 	return "<@" + u.ID + ">"
 }
 
@@ -138,7 +122,7 @@ func (b *Bot) Run() error {
 	return nil
 }
 
-// fetchUsers create map id->name
+// fetchUsers fetches users and creates map id->name
 func (b *Bot) FetchUsers() error {
 	users, err := b.client.GetUsers()
 
@@ -149,15 +133,15 @@ func (b *Bot) FetchUsers() error {
 	b.usersInfo.Users = make(map[string]User)
 
 	for _, user := range users {
-		b.usersInfo.Users[user.ID] = convertUser(user)
+		b.usersInfo.Users[user.ID] = user
 	}
 
-	b.usersInfo.updated = time.Now().Unix()
+	b.usersInfo.lastUpdate = time.Now().Unix()
 
 	return nil
 }
 
-// GetUser return struct with user info by name or ID
+// GetUser tries to find user info by user name or ID
 func (b *Bot) GetUser(nameOrID string) User {
 	if strings.Contains(nameOrID, "@") {
 		id := strings.Trim(nameOrID, "<@>")
@@ -173,7 +157,7 @@ func (b *Bot) GetUser(nameOrID string) User {
 	return User{}
 }
 
-// NormalizeInput normalize links and usernames in a message
+// NormalizeInput normalizes links and usernames in a message
 func (b *Bot) NormalizeInput(input string) string {
 	if input == "" {
 		return ""
@@ -207,20 +191,20 @@ func (b *Bot) NormalizeInput(input string) string {
 	return strings.Join(result, " ")
 }
 
-// SendMessage send simple message to some user
+// SendMessage sends simple message to some user
 func (b *Bot) SendMessage(to, message string) error {
 	user := b.GetUser(to)
 
-	if !user.Valid {
+	if user.ID == "" {
 		return fmt.Errorf("Can't find user %s", to)
 	}
 
-	return b.PostMessage(user.ID, message, slack.PostMessageParameters{AsUser: true})
+	return b.PostMessage(user.ID, message, slack.MsgOptionAsUser(true))
 }
 
-// PostMessage post mesasge
-func (b *Bot) PostMessage(channel, message string, params slack.PostMessageParameters) error {
-	_, _, err := b.client.PostMessage(channel, message, params)
+// PostMessage posts mesasge
+func (b *Bot) PostMessage(channel, message string, options ...slack.MsgOption) error {
+	_, _, err := b.client.PostMessage(channel, append(options, slack.MsgOptionText(message, false))...)
 
 	return err
 }
@@ -235,7 +219,7 @@ func (b *Bot) rtmLoop() {
 
 LOOP:
 	for {
-		if time.Now().Unix() >= b.usersInfo.updated+int64(b.UserListUpdatePeriod) {
+		if time.Now().Unix() >= b.usersInfo.lastUpdate+int64(b.UserListUpdatePeriod) {
 			b.FetchUsers()
 		}
 
@@ -386,34 +370,4 @@ func extractCommand(message string) (string, []string) {
 	messageSlice := strings.Split(message, " ")
 
 	return messageSlice[0], messageSlice[1:]
-}
-
-// convertUser convert slack.User struct to slacker.User
-func convertUser(user slack.User) User {
-	return User{
-		ID:                    user.ID,
-		Name:                  user.Name,
-		FirstName:             user.Profile.FirstName,
-		LastName:              user.Profile.LastName,
-		Email:                 user.Profile.Email,
-		Deleted:               user.Deleted,
-		Color:                 user.Color,
-		DisplayName:           user.Profile.DisplayName,
-		DisplayNameNormalized: user.Profile.DisplayNameNormalized,
-		RealName:              user.RealName,
-		RealNameNormalized:    user.Profile.RealNameNormalized,
-		TZ:                    user.TZ,
-		TZLabel:               user.TZLabel,
-		TZOffset:              user.TZOffset,
-		IsBot:                 user.IsBot,
-		IsAdmin:               user.IsAdmin,
-		IsOwner:               user.IsOwner,
-		IsPrimaryOwner:        user.IsPrimaryOwner,
-		IsRestricted:          user.IsRestricted,
-		IsUltraRestricted:     user.IsUltraRestricted,
-		Has2FA:                user.Has2FA,
-		HasFiles:              user.HasFiles,
-		Presence:              user.Presence,
-		Valid:                 true,
-	}
 }
