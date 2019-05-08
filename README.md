@@ -1,7 +1,7 @@
 <p align="center"><a href="#readme"><img src="https://gh.kaos.st/slacker.svg"/></a></p>
 
 <p align="center">
-  <a href="https://godoc.org/pkg.re/essentialkaos/slacker.v7"><img src="https://godoc.org/pkg.re/essentialkaos/slacker.v7?status.svg"></a>
+  <a href="https://godoc.org/pkg.re/essentialkaos/slacker.v8"><img src="https://godoc.org/pkg.re/essentialkaos/slacker.v8?status.svg"></a>
   <a href="https://travis-ci.org/essentialkaos/slacker"><img src="https://travis-ci.org/essentialkaos/slacker.svg?branch=master" alt="TravisCI" /></a>
   <a href="https://goreportcard.com/report/github.com/essentialkaos/slacker"><img src="https://goreportcard.com/badge/github.com/essentialkaos/slacker"></a>
   <a href="https://codebeat.co/projects/github-com-essentialkaos-slacker-master"><img src="https://codebeat.co/badges/849c74bd-e041-44e6-9d9a-f2d46408b286"></a>
