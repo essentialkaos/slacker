@@ -17,16 +17,16 @@ Before the initial install allows git to use redirects for [pkg.re](https://gith
 git config --global http.https://pkg.re.followRedirects true
 ```
 
-Make sure you have a working Go 1.7+ workspace ([instructions](https://golang.org/doc/install)), then:
+Make sure you have a working Go 1.10+ workspace ([instructions](https://golang.org/doc/install)), then:
 
 ````
-go get pkg.re/essentialkaos/slacker.v7
+go get pkg.re/essentialkaos/slacker.v8
 ````
 
 For update to latest stable release, do:
 
 ```
-go get -u pkg.re/essentialkaos/slacker.v7
+go get -u pkg.re/essentialkaos/slacker.v8
 ```
 
 ### License
