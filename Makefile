@@ -8,11 +8,21 @@
 ################################################################################
 
 .DEFAULT_GOAL := help
-.PHONY = fmt deps dep-init dep-update help
+.PHONY = fmt git-config deps deps-test test dep-init dep-update help
 
 ################################################################################
 
-deps: dep-update ## Download dependencies
+git-config: ## Configure git redirects for stable import path services
+	git config --global http.https://pkg.re.followRedirects true
+
+deps: git-config dep-update ## Download dependencies
+
+deps-test: ## Download dependencies for tests
+	git config --global http.https://pkg.re.followRedirects true
+	go get -d -v pkg.re/check.v1
+
+test: ## Run tests
+	go test -covermode=count ./...
 
 dep-init: ## Initialize dep workspace
 	which dep &>/dev/null || go get -u -v github.com/golang/dep/cmd/dep
