@@ -2,6 +2,7 @@
 
 <p align="center">
   <a href="https://godoc.org/pkg.re/essentialkaos/slacker.v7"><img src="https://godoc.org/pkg.re/essentialkaos/slacker.v7?status.svg"></a>
+  <a href="https://travis-ci.org/essentialkaos/slacker"><img src="https://travis-ci.org/essentialkaos/slacker.svg?branch=master" alt="TravisCI" /></a>
   <a href="https://goreportcard.com/report/github.com/essentialkaos/slacker"><img src="https://goreportcard.com/badge/github.com/essentialkaos/slacker"></a>
   <a href="https://codebeat.co/projects/github-com-essentialkaos-slacker-master"><img src="https://codebeat.co/badges/849c74bd-e041-44e6-9d9a-f2d46408b286"></a>
   <a href="https://essentialkaos.com/ekol"><img src="https://gh.kaos.st/ekol.svg"></a>
@@ -17,17 +18,28 @@ Before the initial install allows git to use redirects for [pkg.re](https://gith
 git config --global http.https://pkg.re.followRedirects true
 ```
 
-Make sure you have a working Go 1.7+ workspace ([instructions](https://golang.org/doc/install)), then:
+Make sure you have a working Go 1.10+ workspace ([instructions](https://golang.org/doc/install)), then:
 
 ````
-go get pkg.re/essentialkaos/slacker.v7
+go get pkg.re/essentialkaos/slacker.v8
 ````
 
 For update to latest stable release, do:
 
 ```
-go get -u pkg.re/essentialkaos/slacker.v7
+go get -u pkg.re/essentialkaos/slacker.v8
 ```
+
+### Build Status
+
+| Branch | Status |
+|--------|--------|
+| `master` | [![Build Status](https://travis-ci.org/essentialkaos/slacker.svg?branch=master)](https://travis-ci.org/essentialkaos/slacker) |
+| `develop` | [![Build Status](https://travis-ci.org/essentialkaos/slacker.svg?branch=develop)](https://travis-ci.org/essentialkaos/slacker) |
+
+### Contributing
+
+Before contributing to this project please read our [Contributing Guidelines](https://github.com/essentialkaos/contributing-guidelines#contributing-guidelines).
 
 ### License
 
