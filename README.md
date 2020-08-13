@@ -1,11 +1,11 @@
 <p align="center"><a href="#readme"><img src="https://gh.kaos.st/slacker.svg"/></a></p>
 
 <p align="center">
-  <a href="https://godoc.org/pkg.re/essentialkaos/slacker.v8"><img src="https://godoc.org/pkg.re/essentialkaos/slacker.v8?status.svg"></a>
+  <a href="https://pkg.go.dev/github.com/essentialkaos/slacker"><img src="https://pkg.go.dev/badge/github.com/essentialkaos/slacker" /></a>
   <a href="https://travis-ci.org/essentialkaos/slacker"><img src="https://travis-ci.org/essentialkaos/slacker.svg?branch=master" alt="TravisCI" /></a>
   <a href="https://goreportcard.com/report/github.com/essentialkaos/slacker"><img src="https://goreportcard.com/badge/github.com/essentialkaos/slacker"></a>
   <a href="https://codebeat.co/projects/github-com-essentialkaos-slacker-master"><img src="https://codebeat.co/badges/849c74bd-e041-44e6-9d9a-f2d46408b286"></a>
-  <a href="https://essentialkaos.com/ekol"><img src="https://gh.kaos.st/ekol.svg"></a>
+  <a href="#license"><img src="https://gh.kaos.st/apache2.svg"></a>
 </p>
 
 `slacker` is simple go package for bootstraping Slack bots.
@@ -43,6 +43,6 @@ Before contributing to this project please read our [Contributing Guidelines](ht
 
 ### License
 
-[EKOL](https://essentialkaos.com/ekol)
+[Apache License, Version 2.0](https://www.apache.org/licenses/LICENSE-2.0)
 
 <p align="center"><a href="https://essentialkaos.com"><img src="https://gh.kaos.st/ekgh.svg"/></a></p>
