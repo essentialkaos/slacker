@@ -75,7 +75,7 @@ func NewBot(name, token string) *Bot {
 		BotName:              name,
 		StatusType:           STATUS_TYPING,
 		AllowDM:              true,
-		UserListUpdatePeriod: 3600,
+		UserListUpdatePeriod: 86400,
 	}
 }
 
